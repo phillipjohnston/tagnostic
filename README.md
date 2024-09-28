@@ -5,10 +5,15 @@ as both tags and content can be transformed into something embedding-like.
 
 ## Installation
 
-None as long as you're on a system that comes with Perl (this means almost all
-Unix-like systems including Windows with git bash etc.) Simly download and run.
-All the difficult bits this script might do are outsourced to the _agent script_
-which you will have to write yourself in whichever way you want.
+For Tagnostic itself: none as long as you're on a system that comes with Perl (this means almost all
+Unix-like systems including Windows with git bash etc.) Download and run
+`tagnostic.pl`.
+
+However, your implementation of the _agent script_ might have additional
+requirements, but that's on you. I recommend making it a shell script using
+Simon Willison's `llm` CLI tool because that's a really quick way to get
+started. But you can write the agent script any way you want, including
+generating your own embeddings.
 
 ## Usage
 
@@ -189,6 +194,10 @@ on a bandwidth-constrained connection when I'm writing this.)
 
 For more information on embeddings through the LLM CLI tool, see
 https://llm.datasette.io/en/stable/embeddings/cli.html.
+
+For more inspiration including the full agent script I use on my site [Entropic
+Thoughts](https://entropicthoughts.com/) see [the blog post introducing this
+tool](https://entropicthoughts.com/determining-tag-quality).
 
 
 ## Contributing
