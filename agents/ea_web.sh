@@ -33,7 +33,8 @@ case "$1" in
 
         # We limit the content to a specific number of bytes to stay within
         # context window limits
-        #
+        TRUNCATE_BYTES=32768
+
         # We use awk to bypass the frontmatter, which might skew
         # the tag result calculation.
         #
@@ -41,10 +42,10 @@ case "$1" in
         # because they aren't helpful and become many tokens.
         cat "$root_site_dir/$name" \
             | awk '/^---$/ { fm = !fm; next } !fm' \
-            | pandoc -f html -t plain \
+            | pandoc -f html -t plain --ascii \
             | tr -d '\n' \
             | grep -vE '^[0-9., -]+$' \
-            | perl -CS -pe 'BEGIN{ binmode(STDIN, ":utf8"); } s/^(.{0,30000})\X*/$1/s' \
+            | head -c $TRUNCATE_BYTES \
             | llm embed -m 3-small \
             | sed 's/[][ ]//g'
         ;;
