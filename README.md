@@ -203,9 +203,9 @@ tool](https://entropicthoughts.com/determining-tag-quality).
 
 A ready-to-use agent script using the Anthropic API is included at
 `agents/claude_agent.sh`. Instead of traditional embeddings, it asks Claude
-Haiku to score content and tags on 30 semantic dimensions, producing vectors
-that work with Tagnostic's cosine similarity. It uses prompt caching to keep
-costs low.
+Haiku to score content and tags on a set of semantic dimensions, producing
+vectors that work with Tagnostic's cosine similarity. It uses prompt caching to
+keep costs low.
 
 Requirements: `curl`, `jq`, and an `ANTHROPIC_API_KEY` environment variable.
 
@@ -218,6 +218,28 @@ export TAGNOSTIC_CONTENT_DIR="/path/to/your/content"
 The `TAGNOSTIC_CONTENT_DIR` variable tells the agent where to find your content
 files (markdown, HTML, org-mode, or plain text with YAML frontmatter tags). It
 defaults to the current directory.
+
+### Custom dimensions
+
+The agent scores content and tags on semantic dimensions listed in
+`agents/dimensions.default`. These defaults are generic; you will get better
+results by defining dimensions that match your domain. To customise:
+
+```shell
+cp agents/dimensions.default my-dimensions.txt
+# Edit my-dimensions.txt: one dimension per line, comments start with #
+export TAGNOSTIC_DIMENSIONS=my-dimensions.txt
+```
+
+For example, a cooking blog might use dimensions like `technique`, `cuisine`,
+`ingredient_focus`, `difficulty`, `nutrition`, and `meal_type` instead of the
+defaults. A legal knowledge base might use `contract_law`, `tort`,
+`regulatory`, `litigation`, `intellectual_property`, etc.
+
+Different content collections can use different dimension files — just point
+`TAGNOSTIC_DIMENSIONS` at a different file before running the agent or batch
+script. Note that changing dimensions invalidates cached vectors, so you should
+clear the cache (`rm /tmp/tagnostic_cache`) when switching dimension sets.
 
 ### Batch precomputation
 

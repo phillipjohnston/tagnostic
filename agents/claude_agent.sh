@@ -15,25 +15,40 @@ script_dir=$(dirname "$(readlink -f "$0")")
 content_dir="${TAGNOSTIC_CONTENT_DIR:-.}"
 model="${TAGNOSTIC_MODEL:-claude-haiku-4-5}"
 
-# Semantic dimensions used for synthetic embeddings.
-# Both content and tags are scored on these same dimensions,
-# so cosine similarity between them captures relevance.
-DIMENSIONS="technology,science,politics,economics,business,finance,health,medicine,environment,energy,education,arts,culture,entertainment,sports,food,travel,personal_narrative,opinion,how_to,tutorial,history,philosophy,psychology,law,security,mathematics,design,communication,community"
+# Load semantic dimensions from file.
+# Override with TAGNOSTIC_DIMENSIONS=/path/to/your/dimensions.txt
+dimensions_file="${TAGNOSTIC_DIMENSIONS:-$script_dir/dimensions.default}"
+
+if [ ! -f "$dimensions_file" ]; then
+    echo "Dimensions file not found: $dimensions_file" >&2
+    echo "Create one (see agents/dimensions.default) or set TAGNOSTIC_DIMENSIONS." >&2
+    exit 1
+fi
+
+# Read dimensions: strip comments, blank lines, join with commas
+DIMENSIONS=$(grep -v '^\s*#' "$dimensions_file" | grep -v '^\s*$' | tr '\n' ',' | sed 's/,$//')
+DIMENSION_COUNT=$(echo "$DIMENSIONS" | tr ',' '\n' | wc -l)
+
+# Build example output: mostly 0.0, with a few non-zero values
+EXAMPLE_OUTPUT=$(echo "$DIMENSIONS" | tr ',' '\n' | awk '
+    BEGIN { srand(42) }
+    { printf "%s%.1f", (NR>1 ? "," : ""), (NR==12 ? 0.8 : (NR==13 ? 0.7 : (NR==14 ? 0.3 : (NR==2 ? 0.1 : 0.0)))) }
+')
 
 SYSTEM_PROMPT="You are a semantic dimension scorer. You will be given either a piece of content or a tag/topic name.
 
-Score the input on each of the following 30 semantic dimensions from 0.0 to 1.0, where 0.0 means completely unrelated and 1.0 means the input is primarily about that dimension:
+Score the input on each of the following $DIMENSION_COUNT semantic dimensions from 0.0 to 1.0, where 0.0 means completely unrelated and 1.0 means the input is primarily about that dimension:
 
 Dimensions: $DIMENSIONS
 
 Rules:
-- Output ONLY a comma-separated list of 30 floating point numbers, one per dimension, in the exact order listed above.
+- Output ONLY a comma-separated list of $DIMENSION_COUNT floating point numbers, one per dimension, in the exact order listed above.
 - No other text, no labels, no explanation.
 - Use values between 0.0 and 1.0.
 - Most values should be near 0.0; only rate dimensions that genuinely apply.
 
 Example output format:
-0.0,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.8,0.7,0.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.0,0.0"
+$EXAMPLE_OUTPUT"
 
 call_claude() {
     local user_content="$1"

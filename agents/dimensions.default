@@ -1,0 +1,41 @@
+# Default semantic dimensions for Tagnostic's Claude agent.
+#
+# Each non-blank, non-comment line is one dimension name.
+# Content and tags are scored on every dimension listed here,
+# producing vectors whose cosine similarity measures relevance.
+#
+# Copy this file and customise it for your domain:
+#   cp agents/dimensions.default my-dimensions.txt
+#   export TAGNOSTIC_DIMENSIONS=my-dimensions.txt
+#
+# Or point TAGNOSTIC_DIMENSIONS at any file with one dimension per line.
+technology
+science
+politics
+economics
+business
+finance
+health
+medicine
+environment
+energy
+education
+arts
+culture
+entertainment
+sports
+food
+travel
+personal_narrative
+opinion
+how_to
+tutorial
+history
+philosophy
+psychology
+law
+security
+mathematics
+design
+communication
+community
