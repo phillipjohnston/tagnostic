@@ -199,6 +199,49 @@ For more inspiration including the full agent script I use on my site [Entropic
 Thoughts](https://entropicthoughts.com/) see [the blog post introducing this
 tool](https://entropicthoughts.com/determining-tag-quality).
 
+## Included Claude agent
+
+A ready-to-use agent script using the Anthropic API is included at
+`agents/claude_agent.sh`. Instead of traditional embeddings, it asks Claude
+Haiku to score content and tags on 30 semantic dimensions, producing vectors
+that work with Tagnostic's cosine similarity. It uses prompt caching to keep
+costs low.
+
+Requirements: `curl`, `jq`, and an `ANTHROPIC_API_KEY` environment variable.
+
+```shell
+export ANTHROPIC_API_KEY="sk-..."
+export TAGNOSTIC_CONTENT_DIR="/path/to/your/content"
+./tagnostic.pl --agent=agents/claude_agent.sh -- --all
+```
+
+The `TAGNOSTIC_CONTENT_DIR` variable tells the agent where to find your content
+files (markdown, HTML, org-mode, or plain text with YAML frontmatter tags). It
+defaults to the current directory.
+
+### Batch precomputation
+
+For larger corpora, `batch_precompute.sh` submits all uncached items to the
+Anthropic Message Batches API at 50% cost. Once the batch completes, Tagnostic
+runs entirely from cache with no further API calls.
+
+```shell
+./batch_precompute.sh --agent=agents/claude_agent.sh
+```
+
+### Tag advisor
+
+`tag_advisor.sh` is a wrapper that runs Tagnostic diagnostics and feeds the
+results to Claude for actionable suggestions: tag renames, merges, splits,
+removals, and re-tagging recommendations.
+
+```shell
+./tag_advisor.sh --agent=agents/claude_agent.sh --threshold=0.10
+```
+
+Tags scoring below the threshold (default 0.10) are analysed in detail and
+sent to Claude Sonnet for advice.
+
 
 ## Contributing
 
